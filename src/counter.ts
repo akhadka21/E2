@@ -29,6 +29,8 @@ function getShieldSnapshot(cur: number): shieldSnapshot {
   };
 }
 
+const shieldDisplay = new EventTarget();
+
 function drawMeter() {
   const snapshot = getShieldSnapshot(count);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -42,6 +44,10 @@ function drawMeter() {
   readout.textContent =
     `Shield charge: ${snapshot.charge} / ${snapshot.capacity}`;
 }
+
+shieldDisplay.addEventListener("shield-changed", () => {
+  drawMeter();
+});
 
 function updateStats() {
   panelUpdates++;
@@ -60,7 +66,7 @@ function setCount(next: number) {
   const bounded = Math.max(0, Math.min(10, next));
   if (bounded === count) return;
   count = bounded;
-  drawMeter();
+  shieldDisplay.dispatchEvent(new Event("shield-changed"));
   if (panel) updateStats();
 }
 
