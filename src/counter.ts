@@ -9,11 +9,28 @@ const host = document.querySelector<HTMLDivElement>("#counter-panel-host")!;
 const diagnostic = document.querySelector<HTMLParagraphElement>(
   "#counter-diagnostic",
 )!;
+
 let count = 0;
+const maxCapacity = 10;
 let panel: HTMLParagraphElement | null = null;
 let panelUpdates = 0;
 
+interface shieldSnapshot {
+  charge: number;
+  capacity: number;
+  missing: number;
+}
+
+function getShieldSnapshot(cur: number): shieldSnapshot {
+  return {
+    charge: cur,
+    capacity: maxCapacity,
+    missing: maxCapacity - cur,
+  };
+}
+
 function drawMeter() {
+  const snapshot = getShieldSnapshot(count);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < 10; i++) {
     ctx.fillStyle = i < count ? "#27766b" : "#c9d2c9";
@@ -21,8 +38,9 @@ function drawMeter() {
   }
   ctx.fillStyle = "#233e43";
   ctx.font = "16px system-ui";
-  ctx.fillText(`${count} / 10 shield`, 12, 100);
-  readout.textContent = `Shield charge: ${count} / 10`;
+  ctx.fillText(`${snapshot.charge} / ${snapshot.capacity} shield`, 12, 100);
+  readout.textContent =
+    `Shield charge: ${snapshot.charge} / ${snapshot.capacity}`;
 }
 
 function updateStats() {
@@ -33,7 +51,9 @@ function updateStats() {
 
 function renderStats() {
   if (!panel) return;
-  panel.textContent = `Shield charge: ${count} · Missing charge: ${10 - count}`;
+  const snapshot = getShieldSnapshot(count);
+  panel.textContent =
+    `Shield charge: ${snapshot.charge} · Missing charge: ${snapshot.missing}`;
 }
 
 function setCount(next: number) {
