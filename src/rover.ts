@@ -1,5 +1,3 @@
-import console from "node:console";
-
 export {};
 
 const canvas = document.querySelector<HTMLCanvasElement>("#rover-canvas")!;
