@@ -49,25 +49,34 @@ shieldDisplay.addEventListener("shield-changed", () => {
   drawMeter();
 });
 
-function updateStats() {
-  panelUpdates++;
+const inspectorListener = () => {
+  panelUpdates += 1;
   diagnostic.textContent = `Inspector deliveries: ${panelUpdates}`;
-  renderStats();
-}
+  if (panel) {
+    const snapshot = getShieldSnapshot(count);
+    panel.textContent =
+      `Shield charge: ${snapshot.charge} · Missing charge: ${snapshot.missing}`;
+  }
+};
 
-function renderStats() {
-  if (!panel) return;
-  const snapshot = getShieldSnapshot(count);
-  panel.textContent =
-    `Shield charge: ${snapshot.charge} · Missing charge: ${snapshot.missing}`;
-}
+// function updateStats() {
+//   panelUpdates++;
+//   diagnostic.textContent = `Inspector deliveries: ${panelUpdates}`;
+//   renderStats();
+// }
+
+// function renderStats() {
+//   if (!panel) return;
+//   const snapshot = getShieldSnapshot(count);
+//   panel.textContent =
+//     `Shield charge: ${snapshot.charge} · Missing charge: ${snapshot.missing}`;
+// }
 
 function setCount(next: number) {
   const bounded = Math.max(0, Math.min(10, next));
   if (bounded === count) return;
   count = bounded;
   shieldDisplay.dispatchEvent(new Event("shield-changed"));
-  if (panel) updateStats();
 }
 
 document.querySelector<HTMLButtonElement>("#counter-less")!.onclick = () => {
@@ -79,15 +88,22 @@ document.querySelector<HTMLButtonElement>("#counter-more")!.onclick = () => {
 document.querySelector<HTMLButtonElement>("#counter-reset")!.onclick = () => {
   setCount(0);
 };
+
 document.querySelector<HTMLButtonElement>("#counter-open")!.onclick = () => {
   if (panel) return;
   panel = document.createElement("p");
   host.append(panel);
-  renderStats();
+  const snapshot = getShieldSnapshot(count);
+  panel.textContent =
+    `Shield charge: ${snapshot.charge} · Missing charge: ${snapshot.missing}`;
+  shieldDisplay.addEventListener("shield-changed", inspectorListener);
 };
+
 document.querySelector<HTMLButtonElement>("#counter-close")!.onclick = () => {
   if (!panel) return;
   panel.remove();
   panel = null;
+
+  shieldDisplay.removeEventListener("shield-changed", inspectorListener);
 };
 drawMeter();
